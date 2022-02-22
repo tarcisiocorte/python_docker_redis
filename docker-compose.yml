@@ -1,0 +1,43 @@
+version: "3"
+services:
+  web:
+    build:
+      context: ./nginx/
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    networks:
+      - webnet
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+        /bin/bash -c "/app/init.dev.sh
+        "
+    ports:
+      - "5656:5656"
+    environment:
+        REDIS_HOST: redis
+    networks:
+      - webnet
+
+  redis:
+      image: redis:latest
+      ports:
+          - 6379:6379
+      volumes:
+          - ./app/config/redis.conf:/redis.conf
+      command: [ "redis-server", "/redis.conf" ]
+      networks:
+        - webnet      
+
+volumes:
+  db:
+    driver: local
+  cache:
+    driver: local
+    
+networks:
+  webnet:
